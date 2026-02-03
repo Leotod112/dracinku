@@ -66,12 +66,11 @@ export function InfiniteFreeReelsSection({ title }: InfiniteFreeReelsSectionProp
     );
   }
 
-  if (isLoading) {
+  // Show skeleton when loading or no data
+  if (isLoading || !data) {
     return (
       <section className="space-y-4">
-        <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-4">
-          {title}
-        </h2>
+        <div className="h-7 md:h-8 w-48 bg-white/10 rounded-lg animate-pulse mb-4" />
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <UnifiedMediaCardSkeleton key={i} />
