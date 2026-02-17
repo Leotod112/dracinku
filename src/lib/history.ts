@@ -40,18 +40,26 @@ export function addToHistory(item: Omit<HistoryItem, "playedAt">) {
   try {
     const list = getHistory();
 
-    // dedupe by id+platform+episode
-    const filtered = list.filter(
-      (h) => !(h.id === item.id && h.platform === item.platform && h.episode === item.episode)
+    // dedupe by id+platform+title, update episode if same title
+    const existingIndex = list.findIndex(
+      (h) => h.id === item.id && h.platform === item.platform && h.title === item.title
     );
 
-    const next: HistoryItem = { ...item, playedAt: now() } as HistoryItem;
+    if (existingIndex !== -1) {
+      // Update existing entry with new episode and timestamp
+      list[existingIndex] = { ...list[existingIndex], ...item, playedAt: now() } as HistoryItem;
+      // Move to top (most recent)
+      const [updated] = list.splice(existingIndex, 1);
+      list.unshift(updated);
+    } else {
+      // Add new entry
+      const next: HistoryItem = { ...item, playedAt: now() } as HistoryItem;
+      list.unshift(next);
+    }
 
-    filtered.unshift(next);
+    if (list.length > MAX_ITEMS) list.length = MAX_ITEMS;
 
-    if (filtered.length > MAX_ITEMS) filtered.length = MAX_ITEMS;
-
-    setHistory(filtered);
+    setHistory(list);
   } catch (e) {
     console.warn("addToHistory failed", e);
   }
