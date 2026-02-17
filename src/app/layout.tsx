@@ -6,6 +6,8 @@ import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Suspense } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Dracinkuu - Streaming Drama Pendek",
@@ -33,6 +35,8 @@ export default function RootLayout({
           <Footer />
           <Toaster />
           <Sonner />
+          <SpeedInsights />
+          <Analytics />
         </Providers>
       </body>
     </html>
