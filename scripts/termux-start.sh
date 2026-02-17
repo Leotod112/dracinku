@@ -5,6 +5,7 @@ echo "== SekaiDrama Termux helper =="
 
 if ! command -v node >/dev/null 2>&1; then
   echo "Node.js tidak ditemukan. Pasang dengan: pkg install nodejs-lts yarn" >&2
+  exit 1
 fi
 
 if [ ! -f .env ]; then
@@ -22,7 +23,33 @@ else
   npm ci || npm install
 fi
 
-echo "Memulai dev server pada $HOST:$PORT"
+# Check if .next build exists; if not, try building or suggest build on PC
+if [ ! -d ".next" ]; then
+  echo ""
+  echo "⚠️  Direktori build .next tidak ditemukan."
+  echo "Dua pilihan:"
+  echo "  1. Build di PC/laptop terlebih dahulu, transfer folder .next ke Termux"
+  echo "  2. Build di Termux (butuh ~500MB RAM, mungkin lambat)"
+  echo ""
+  read -p "Lanjut build di Termux? (y/n): " -n 1 -r BUILD_CHOICE
+  echo ""
+  
+  if [[ $BUILD_CHOICE =~ ^[Yy]$ ]]; then
+    echo "Building... (ini butuh waktu & RAM)"
+    export NODE_OPTIONS="--max_old_space_size=512"
+    if command -v yarn >/dev/null 2>&1; then
+      yarn build || { echo "Build gagal! Coba build di PC lalu transfer /.next folder"; exit 1; }
+    else
+      npm run build || { echo "Build gagal! Coba build di PC lalu transfer /.next folder"; exit 1; }
+    fi
+  else
+    echo "Build dimulai... silahkan tunggu atau transfer build dari PC"
+    echo "(Cek README-TERMUX.md untuk instruksi transfer build)"
+    exit 1
+  fi
+fi
+
+echo "Memulai server pada $HOST:$PORT"
 echo "Buka di browser perangkat: http://127.0.0.1:$PORT"
 
 # Tampilkan IP lokal jika ada (berguna untuk akses dari device lain di LAN)
@@ -33,15 +60,19 @@ if command -v ip >/dev/null 2>&1; then
   fi
 fi
 
-# Jalankan dev server (Next.js/Vite/whatever script `dev` di package.json)
-if npm run | grep -q " dev"; then
-  # prefer yarn if available
+# Check jika ada script dev atau hanya bisa start (production)
+if grep -q '"dev"' package.json 2>/dev/null; then
+  echo "Jalankan dev server..."
   if command -v yarn >/dev/null 2>&1; then
     HOST=$HOST PORT=$PORT yarn dev
   else
     HOST=$HOST PORT=$PORT npm run dev
   fi
 else
-  echo "Tidak menemukan script 'dev' di package.json. Jalankan server sesuai dokumentasi proyek." >&2
-  exit 1
+  echo "Jalankan production server..."
+  if command -v yarn >/dev/null 2>&1; then
+    HOST=$HOST PORT=$PORT yarn start
+  else
+    HOST=$HOST PORT=$PORT npm start
+  fi
 fi
