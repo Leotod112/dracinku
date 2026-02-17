@@ -18,6 +18,7 @@ export default function FlickReelsWatchPage() {
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [warmupError, setWarmupError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // Stable timestamp that only changes with episode or retry
@@ -167,7 +168,7 @@ export default function FlickReelsWatchPage() {
   return (
     <div className="fixed inset-0 bg-black flex flex-col">
       {/* Header - Fixed Overlay */}
-      <div className="absolute top-0 left-0 right-0 z-40 h-16 pointer-events-none">
+      <div className={`absolute top-0 left-0 right-0 z-40 h-16 pointer-events-none ${isPlaying ? 'hidden' : ''}`}>
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/50 to-transparent" />
 
         <div className="relative z-10 flex items-center justify-between h-full px-4 max-w-7xl mx-auto pointer-events-auto">
@@ -210,6 +211,8 @@ export default function FlickReelsWatchPage() {
                 (!currentEpisodeData || !videoReady) && "invisible"
               )}
               poster={currentEpisodeData?.raw?.chapter_cover}
+              onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+              onPause={() => setIsPlaying(false)}
               onEnded={handleVideoEnded}
               onError={async (e) => {
                   if (retryCount < 2) {
@@ -234,6 +237,7 @@ export default function FlickReelsWatchPage() {
          </div>
 
          {/* Navigation Controls Overlay - Bottom */}
+         {!isPlaying && (
          <div className="absolute bottom-20 md:bottom-12 left-0 right-0 z-40 pointer-events-none flex justify-center pb-safe-area-bottom">
             <div className="flex items-center gap-2 md:gap-6 pointer-events-auto bg-black/60 backdrop-blur-md px-3 py-1.5 md:px-6 md:py-3 rounded-full border border-white/10 shadow-lg transition-all scale-90 md:scale-100 origin-bottom">
                 <button
@@ -263,10 +267,11 @@ export default function FlickReelsWatchPage() {
                 </button>
             </div>
          </div>
+         )}
       </div>
 
       {/* Episode List Sidebar */}
-      {showEpisodeList && (
+      {showEpisodeList && !isPlaying && (
         <>
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"

@@ -72,6 +72,7 @@ export default function ReelShortWatchPage() {
   
   const [currentEpisode, setCurrentEpisode] = useState(1);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [selectedQuality, setSelectedQuality] = useState<string>("auto");
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -206,7 +207,7 @@ export default function ReelShortWatchPage() {
   return (
     <main className="fixed inset-0 bg-black flex flex-col">
       {/* Header - Fixed Overlay with improved visibility */}
-      <div className="absolute top-0 left-0 right-0 z-40 h-16 pointer-events-none">
+      <div className={`absolute top-0 left-0 right-0 z-40 h-16 pointer-events-none ${isPlaying ? 'hidden' : ''}`}>
         {/* Gradient background for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/50 to-transparent" />
 
@@ -308,12 +309,15 @@ export default function ReelShortWatchPage() {
               controls
               playsInline
               autoPlay
+              onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+              onPause={() => setIsPlaying(false)}
               onEnded={handleVideoEnded}
             />
          </div>
 
          {/* Navigation Controls Overlay - Bottom */}
          {/* Adjusted to bottom-20 on mobile per user feedback. */}
+         {!isPlaying && (
          <div className="absolute bottom-20 md:bottom-12 left-0 right-0 z-40 pointer-events-none flex justify-center pb-safe-area-bottom">
             <div className="flex items-center gap-2 md:gap-6 pointer-events-auto bg-black/60 backdrop-blur-md px-3 py-1.5 md:px-6 md:py-3 rounded-full border border-white/10 shadow-lg transition-all scale-90 md:scale-100 origin-bottom">
                 <button
@@ -337,10 +341,11 @@ export default function ReelShortWatchPage() {
                 </button>
             </div>
          </div>
+         )}
       </div>
 
       {/* Episode List Sidebar */}
-      {showEpisodeList && (
+      {showEpisodeList && !isPlaying && (
         <>
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"

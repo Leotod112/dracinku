@@ -32,6 +32,7 @@ export default function DramaBoxWatchPage() {
   const [quality, setQuality] = useState(720);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const { data: detailData, isLoading: detailLoading } = useDramaDetail(bookId || "");
   const { data: episodes, isLoading: episodesLoading } = useEpisodes(bookId || "");
@@ -106,6 +107,18 @@ export default function DramaBoxWatchPage() {
     }
   };
 
+  // Poll video element state as a fallback to keep `isPlaying` accurate
+  useEffect(() => {
+    const id = setInterval(() => {
+      const v = videoRef.current;
+      if (!v) return;
+      const playing = !v.paused && !v.ended && v.readyState > 2;
+      if (playing !== isPlaying) setIsPlaying(playing);
+    }, 250);
+
+    return () => clearInterval(id);
+  }, []);
+
   // Handle both new and legacy API formats
   let book: { bookId: string; bookName: string } | null = null;
 
@@ -146,7 +159,7 @@ export default function DramaBoxWatchPage() {
   return (
     <main className="fixed inset-0 bg-black flex flex-col">
       {/* Header - Fixed Overlay with improved visibility */}
-      <div className="absolute top-0 left-0 right-0 z-40 h-16 pointer-events-none">
+      <div className={`absolute top-0 left-0 right-0 z-40 h-16 pointer-events-none ${isPlaying ? 'hidden' : ''}`}>
         {/* Gradient background for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/50 to-transparent" />
 
@@ -211,6 +224,8 @@ export default function DramaBoxWatchPage() {
                 src={getVideoUrl()}
                 controls
                 autoPlay
+                onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+                onPause={() => setIsPlaying(false)}
                 onEnded={handleVideoEnded}
                 className="w-full h-full object-contain max-h-[100dvh]"
                 poster={currentEpisodeData.chapterImg}
@@ -224,6 +239,7 @@ export default function DramaBoxWatchPage() {
 
          {/* Navigation Controls Overlay - Bottom */}
          {/* Adjusted to bottom-20 on mobile per user feedback. */}
+         {!isPlaying && (
          <div className="absolute bottom-20 md:bottom-12 left-0 right-0 z-40 pointer-events-none flex justify-center pb-safe-area-bottom">
             <div className="flex items-center gap-2 md:gap-6 pointer-events-auto bg-black/60 backdrop-blur-md px-3 py-1.5 md:px-6 md:py-3 rounded-full border border-white/10 shadow-lg transition-all scale-90 md:scale-100 origin-bottom">
                 <button
@@ -247,10 +263,11 @@ export default function DramaBoxWatchPage() {
                 </button>
             </div>
          </div>
+         )}
       </div>
 
       {/* Episode List Sidebar */}
-      {showEpisodeList && (
+      {showEpisodeList && !isPlaying && (
         <>
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
