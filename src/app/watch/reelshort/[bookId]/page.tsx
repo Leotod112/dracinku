@@ -173,13 +173,25 @@ export default function ReelShortWatchPage() {
     };
   }, [episodeData, selectedQuality, getCurrentVideoUrl, loadVideo]);
 
-  // Handle video ended - auto next episode
+  // Handle video ended - auto scroll down then go to next episode
   const handleVideoEnded = useCallback(() => {
+    // Smooth scroll down a viewport to reveal content below (if any)
+    try {
+      if (typeof window !== "undefined") {
+        window.scrollBy({ top: Math.floor(window.innerHeight * 0.9), behavior: "smooth" });
+      }
+    } catch (e) {
+      // ignore
+    }
+
     const totalEpisodes = detailData?.totalEpisodes || 1;
     if (currentEpisode < totalEpisodes) {
       const nextEp = currentEpisode + 1;
-      setCurrentEpisode(nextEp);
-      window.history.replaceState(null, '', `/watch/reelshort/${bookId}?ep=${nextEp}`);
+      // small delay so the user sees the scroll animation before navigation
+      setTimeout(() => {
+        setCurrentEpisode(nextEp);
+        window.history.replaceState(null, "", `/watch/reelshort/${bookId}?ep=${nextEp}`);
+      }, 500);
     }
   }, [currentEpisode, detailData?.totalEpisodes, bookId]);
 
@@ -255,8 +267,8 @@ export default function ReelShortWatchPage() {
 
       {/* Main Video Area */}
       <div className="flex-1 w-full h-full relative bg-black flex flex-col items-center justify-center">
-         {/* Video Element Wrapper */}
-         <div className="relative w-full h-full flex items-center justify-center">
+         {/* Video Element Wrapper (scrollable) */}
+         <div className="relative w-full h-full flex items-center justify-center overflow-y-auto">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center z-20">
                 <Loader2 className="w-10 h-10 text-primary animate-spin" />
@@ -292,7 +304,7 @@ export default function ReelShortWatchPage() {
             {/* Video Player */}
             <video
               ref={videoRef}
-              className="w-full h-full object-contain max-h-[100dvh]"
+              className="w-full object-contain max-h-[80dvh]"
               controls
               playsInline
               autoPlay
