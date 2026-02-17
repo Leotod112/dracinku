@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, X, Play } from "lucide-react";
+import { Search, X, Play, History } from "lucide-react";
 import { useSearchDramas } from "@/hooks/useDramas";
 import { useReelShortSearch } from "@/hooks/useReelShort";
 import { useNetShortSearch } from "@/hooks/useNetShort";
@@ -97,6 +97,13 @@ export function Header() {
 
           {/* Search Button Only - No Nav Links */}
           <div className="flex items-center gap-2">
+            <Link
+              href="/history"
+              className="p-2.5 rounded-xl hover:bg-muted/50 transition-colors"
+              aria-label="Riwayat"
+            >
+              <History className="w-5 h-5" />
+            </Link>
             <button
               onClick={() => setSearchOpen(true)}
               className="p-2.5 rounded-xl hover:bg-muted/50 transition-colors"

@@ -6,6 +6,7 @@ import { useFreeReelsDetail } from "@/hooks/useFreeReels";
 import { ChevronLeft, ChevronRight, Loader2, List, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { addToHistory } from "@/lib/history";
 
 export default function FreeReelsWatchPage() {
   const params = useParams();
@@ -161,7 +162,17 @@ export default function FreeReelsWatchPage() {
                 autoPlay
                 className="w-full h-full object-contain max-h-[100dvh]"
                 poster={drama.cover}
-                onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+                onPlay={() => {
+                  setIsPlaying(true);
+                  setShowEpisodeList(false);
+                  addToHistory({
+                    id: activeEpisodeId,
+                    platform: "freereels",
+                    title: drama.title,
+                    episode: currentEpisodeData ? (currentEpisodeData.index || 0) + 1 : undefined,
+                    url: typeof window !== "undefined" ? window.location.href : "",
+                  });
+                }}
                 onPause={() => setIsPlaying(false)}
                 onEnded={handleVideoEnded}
                 // @ts-ignore

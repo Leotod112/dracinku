@@ -6,6 +6,7 @@ import { useFlickReelsDetail } from "@/hooks/useFlickReels";
 import { ChevronLeft, ChevronRight, Loader2, List, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { addToHistory } from "@/lib/history";
 
 export default function FlickReelsWatchPage() {
   const params = useParams();
@@ -211,7 +212,17 @@ export default function FlickReelsWatchPage() {
                 (!currentEpisodeData || !videoReady) && "invisible"
               )}
               poster={currentEpisodeData?.raw?.chapter_cover}
-              onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+              onPlay={() => {
+                setIsPlaying(true);
+                setShowEpisodeList(false);
+                addToHistory({
+                  id: bookId,
+                  platform: "flickreels",
+                  title: drama?.title || "Drama",
+                  episode: currentEpisodeData?.index ? currentEpisodeData.index + 1 : undefined,
+                  url: typeof window !== "undefined" ? window.location.href : "",
+                });
+              }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleVideoEnded}
               onError={async (e) => {

@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Loader2, AlertCircle, List } from "lucide-re
 import Link from "next/link";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Hls from "hls.js";
+import { addToHistory } from "@/lib/history";
 
 export default function NetShortWatchPage() {
   const params = useParams<{ shortPlayId: string }>();
@@ -287,7 +288,17 @@ export default function NetShortWatchPage() {
               autoPlay
               crossOrigin="anonymous"
               {...({ disableRemotePlayback: true, referrerPolicy: "no-referrer" } as any)}
-              onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+              onPlay={() => {
+                setIsPlaying(true);
+                setShowEpisodeList(false);
+                addToHistory({
+                  id: shortPlayId || "",
+                  platform: "netshort",
+                  title: data?.title || "Video",
+                  episode: currentEpisode,
+                  url: typeof window !== "undefined" ? window.location.href : "",
+                });
+              }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleVideoEnded}
             />

@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { addToHistory } from "@/lib/history";
 import type { DramaDetailDirect, DramaDetailResponseLegacy } from "@/types/drama";
 
 // Helper to check if response is new format
@@ -224,7 +225,17 @@ export default function DramaBoxWatchPage() {
                 src={getVideoUrl()}
                 controls
                 autoPlay
-                onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+                onPlay={() => {
+                  setIsPlaying(true);
+                  setShowEpisodeList(false);
+                  addToHistory({
+                    id: bookId || "",
+                    platform: "dramabox",
+                    title: book?.bookName || "Drama",
+                    episode: currentEpisode + 1,
+                    url: typeof window !== "undefined" ? window.location.href : "",
+                  });
+                }}
                 onPause={() => setIsPlaying(false)}
                 onEnded={handleVideoEnded}
                 className="w-full h-full object-contain max-h-[100dvh]"

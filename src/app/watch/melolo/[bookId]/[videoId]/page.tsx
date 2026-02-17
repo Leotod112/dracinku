@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { addToHistory } from "@/lib/history";
 
 interface VideoQuality {
   name: string;
@@ -217,7 +218,17 @@ export default function MeloloWatchPage() {
                 controls
                 autoPlay
                 playsInline
-                onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+                onPlay={() => {
+                  setIsPlaying(true);
+                  setShowEpisodeList(false);
+                  addToHistory({
+                    id: currentVideoId,
+                    platform: "melolo",
+                    title: drama?.series_title || "Drama",
+                    episode: currentEpisodeIndex !== -1 ? currentEpisodeIndex + 1 : undefined,
+                    url: typeof window !== "undefined" ? window.location.href : "",
+                  });
+                }}
                 onPause={() => setIsPlaying(false)}
                 onEnded={handleVideoEnded}
                 className="w-full h-full object-contain max-h-[100dvh]"

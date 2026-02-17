@@ -35,6 +35,7 @@ interface DetailData {
 }
 
 import { decryptData } from "@/lib/crypto";
+import { addToHistory } from "@/lib/history";
 
 // ... existing code
 
@@ -309,7 +310,17 @@ export default function ReelShortWatchPage() {
               controls
               playsInline
               autoPlay
-              onPlay={() => { setIsPlaying(true); setShowEpisodeList(false); }}
+              onPlay={() => {
+                setIsPlaying(true);
+                setShowEpisodeList(false);
+                addToHistory({
+                  id: bookId || "",
+                  platform: "reelshort",
+                  title: detailData?.title || "Drama",
+                  episode: currentEpisode,
+                  url: typeof window !== "undefined" ? window.location.href : "",
+                });
+              }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleVideoEnded}
             />
